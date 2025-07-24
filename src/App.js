@@ -26,7 +26,7 @@ export default function App() {
       const pos = astro.getEarthPositionJD(jd);
       if (pos) setEarthPos(pos);
       if (jd) setJdNow(jd);
-      console.log("new earth pos + jd", pos, jd);
+      console.log("new earth pos", pos, julian.JDToDate(jd).toUTCString());
     }, 10000); // update every ten seconds
 
     return () => clearInterval(interval); // cleanup on unmount
