@@ -3,8 +3,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { useLoader } from "@react-three/fiber";
 import * as THREE from "three";
-import { julian, planetposition, sidereal, solar } from "astronomia";
-import { Equatorial } from 'astronomia/coord';
+import { julian, planetposition, solar } from "astronomia";
 import earthData from "astronomia/data/vsop87Bearth";
 import { Text } from "@react-three/drei";
 
@@ -137,7 +136,6 @@ function latLonToVector3(lat, lon, radius = 1) {
 function Earth({ position, jdNow }) {
   const earthTexture = useLoader(THREE.TextureLoader, "/textures/00_earthmap1k.jpg");
   const earthGroupRef = useRef();
-  const { subsolarLat, subsolarLon } = getSubsolarLatLon(jdNow);
 
   useEffect(() => {
     if (!earthGroupRef.current) return;
@@ -255,7 +253,7 @@ export default function App() {
   // Compute JD once, right now
   const date = new Date(Date.UTC(1995, 6, 10, 12, 0, 0)); //historical (or future :) ) date set. month is zero indexed (jan = 0) yr-mo-day-h-m-s
   const now = new Date();
-  const [jdNow, setJdNow] = useState(julian.DateToJD(date));
+  const [jdNow, setJdNow] = useState(julian.DateToJD(now));
   const initialPos = getEarthPositionJD(jdNow);
 
   const [earthPos, setEarthPos] = useState(initialPos);
