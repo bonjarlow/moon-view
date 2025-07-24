@@ -91,11 +91,35 @@ export default function App() {
           border: "1px solid #333",
           borderRadius: "4px",
           fontFamily: "monospace",
-          fontSize: "0.9rem",
+          fontSize: "0.8rem",
         }}
       >
-        Simulated Time: {julian.JDToDate(jdNow).toUTCString()}
+        Simulated Time: {julian.JDToDate(jdNow).toLocaleString("en-US", {timeZone: "America/New_York" })}
       </div>
+
+      {/* Reset to Now Button */}
+      <button
+        onClick={() => {
+          const now = new Date();
+          const jd = julian.DateToJD(now);
+          const pos = astro.getEarthPositionJD(jd);
+          setJdNow(jd);
+          setEarthPos(pos);
+        }}
+        style={{
+          position: "absolute",
+          top: 100, // slightly lower than the first button
+          left: 20,
+          zIndex: 10,
+          padding: "0.5rem 1rem",
+          background: "#111",
+          color: "#fff",
+          border: "1px solid #333",
+          borderRadius: "4px",
+        }}
+       >
+         Reset to Now
+       </button>
 
       <Canvas
         shadows
