@@ -18,16 +18,18 @@ export default function App() {
   const [earthPos, setEarthPos] = useState(initialPos);
   const [cameraMode, setCameraMode] = useState("sun"); // "sun" or "earth"
 
-  /*
+
   useEffect(() => {
     const interval = setInterval(() => {
       const jd = julian.DateToJD(new Date());
-      const pos = getEarthPositionJD(jd);
+      const pos = astro.getEarthPositionJD(jd);
       if (pos) setEarthPos(pos);
+      if (jd) setJdNow(jd);
+      console.log("new earth pos + jd", pos, jd);
     }, 10000); // update every ten seconds
 
     return () => clearInterval(interval); // cleanup on unmount
-  }, []); */
+  }, []);
 
   const toggleCameraMode = () => {
     setCameraMode(prev => (prev === "sun" ? "earth" : "sun"));
