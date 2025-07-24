@@ -4,7 +4,7 @@ import * as THREE from "three";
 import * as astro from "../utils/astroUtil";
 import { Text } from "@react-three/drei";
 
-function Earth({ position, jdNow }) {
+function Earth({ position, jdNow, showGeometry }) {
   const earthTexture = useLoader(THREE.TextureLoader, "/textures/00_earthmap1k.jpg");
   const earthGroupRef = useRef();
 
@@ -76,31 +76,45 @@ function Earth({ position, jdNow }) {
         <meshBasicMaterial color="orange" />
       </mesh>
 
-      {/* Local XY plane - centered on Earth */}
-      <mesh rotation={[0, 0, 0]} position={[0, 0, 0]}>
-        <circleGeometry args={[2]} />
-        <meshBasicMaterial color="cyan" opacity={0.3} transparent side={THREE.DoubleSide} />
-      </mesh>
+      {showGeometry && (
+        <>
+          {/* Local XY plane - centered on Earth */}
+          <mesh rotation={[0, 0, 0]} position={[0, 0, 0]}>
+            <circleGeometry args={[2]} />
+            <meshBasicMaterial
+              color="cyan"
+              opacity={0.3}
+              transparent
+              side={THREE.DoubleSide}
+            />
+          </mesh>
 
-      {/* Local XZ plane - centered on Earth */}
-      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
-        <circleGeometry args={[2]} />
-        <meshBasicMaterial color="cyan" opacity={0.3} transparent side={THREE.DoubleSide} />
-      </mesh>
+          {/* Local XZ plane - centered on Earth */}
+          <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
+            <circleGeometry args={[2]} />
+            <meshBasicMaterial
+              color="cyan"
+              opacity={0.3}
+              transparent
+              side={THREE.DoubleSide}
+            />
+          </mesh>
 
-      {/* Subsolar position */}
-      <mesh position={subsolarMarker}>
-        <sphereGeometry args={[0.03, 16, 16]} />
-        <meshStandardMaterial color="yellow" emissive="yellow" />
-      </mesh>
+          {/* Subsolar position */}
+          <mesh position={subsolarMarker}>
+            <sphereGeometry args={[0.03, 16, 16]} />
+            <meshStandardMaterial color="yellow" emissive="yellow" />
+          </mesh>
 
-      {/* Axes Helper */}
-      <axesHelper args={[2]} />
+          {/* Axes Helper */}
+          <axesHelper args={[2]} />
+        </>
+      )}
     </group>
   );
 }
 
-function EarthOrbit({ jdNow }) {
+function EarthOrbit({ jdNow, showGeometry }) {
 
   const points = useMemo(() => {
     const pts = [];
@@ -117,31 +131,45 @@ function EarthOrbit({ jdNow }) {
 
   return (
     <>
-      //earth orbit path
+      {/* Earth orbit path (always shown) */}
       <line geometry={geometry}>
         <lineBasicMaterial attach="material" color="lightblue" linewidth={2} />
       </line>
-      //ecliptic plane
-      <mesh rotation={[0, 0, 0]}>
-        <circleGeometry args={[eclipticRadius + 10, 128]} />
-        <meshBasicMaterial color="orange" opacity={0.15} transparent side={THREE.DoubleSide} />
-      </mesh>
+
+      {/* Conditionally show the ecliptic plane */}
+      {showGeometry && (
+        <mesh rotation={[0, 0, 0]}>
+          <circleGeometry args={[eclipticRadius + 10, 128]} />
+          <meshBasicMaterial
+            color="orange"
+            opacity={0.15}
+            transparent
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+      )}
     </>
   );
 }
 
-function SunToEarthLine({ earthPos }) {
+function SunToEarthLine({ earthPos, showGeometry }) {
   const points = [new THREE.Vector3(0, 0, 0), new THREE.Vector3(...earthPos)];
   const geometry = new THREE.BufferGeometry().setFromPoints(points);
 
   return (
-    <line geometry={geometry}>
-      <lineBasicMaterial attach="material" color="white" linewidth={2} />
-    </line>
+    <>
+      {showGeometry && (
+        <line geometry={geometry}>
+          <lineBasicMaterial attach="material" color="white" linewidth={2} />
+        </line>
+      )}
+    </>
   );
 }
 
-function KeyPoints() {
+function KeyPoints({ showGeometry }) {
+  if (!showGeometry) return null;
+
   const radius = 15; // Match your Earth's orbital radius
 
   const points = {

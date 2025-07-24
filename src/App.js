@@ -11,13 +11,14 @@ import CameraControls from "./components/CameraControls"
 
 export default function App() {
   // Compute JD once, right now
-  const date = new Date(Date.UTC(1995, 6, 10, 12, 0, 0)); //historical (or future :) ) date set. month is zero indexed (jan = 0) yr-mo-day-h-m-s
+  const date = new Date(Date.UTC(2001, 11, 12, 12, 0, 0)); //historical (or future :) ) date set. month is zero indexed (jan = 0) yr-mo-day-h-m-s
   const now = new Date();
   const [jdNow, setJdNow] = useState(julian.DateToJD(now));
   const initialPos = astro.getEarthPositionJD(jdNow);
 
   const [earthPos, setEarthPos] = useState(initialPos);
   const [cameraMode, setCameraMode] = useState("sun"); // "sun" or "earth"
+  const [showGeometry, setShowGeometry] = useState(false);
 
 
   useEffect(() => {
@@ -57,17 +58,34 @@ export default function App() {
         Toggle Camera: {cameraMode}
       </button>
 
+      <button
+        onClick={() => setShowGeometry(prev => !prev)}
+        style={{
+          position: "absolute",
+          top: 60, // slightly below the other button
+          left: 20,
+          zIndex: 10,
+          padding: "0.5rem 1rem",
+          background: "#111",
+          color: "#fff",
+          border: "1px solid #333",
+          borderRadius: "4px",
+        }}
+      >
+        {showGeometry ? "Hide Geometry" : "Show Geometry"}
+      </button>
+
       <Canvas
         shadows
         camera={{ position: [0, 20, 40], fov: 50, near: 0.1, far: 1000 }}
         gl={{ physicallyCorrectLights: true }}
         style={{ height: "100vh", background: "black" }}
       >
-        <Sun />
-        <EarthOrbit jdNow={jdNow} />
-        <Earth position={earthPos} jdNow={jdNow} />
-        <SunToEarthLine earthPos={earthPos} />
-        <KeyPoints />
+        <Sun showGeometry={showGeometry}/>
+        <EarthOrbit jdNow={jdNow} showGeometry={showGeometry} />
+        <Earth position={earthPos} jdNow={jdNow} showGeometry={showGeometry} />
+        <SunToEarthLine earthPos={earthPos} showGeometry={showGeometry} />
+        <KeyPoints showGeometry={showGeometry} />
         <CameraControls target={target} />
 
       </Canvas>

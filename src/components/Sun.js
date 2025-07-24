@@ -2,7 +2,7 @@
 import * as THREE from 'three';
 import React from 'react';
 
-export default function Sun() {
+export default function Sun({ showGeometry }) {
   return (
     <group>
       {/* Light source */}
@@ -22,7 +22,7 @@ export default function Sun() {
       </mesh>
 
       {/* Optional: Axes helper */}
-      <axesHelper args={[10]} />
+      {showGeometry && <axesHelper args={[10]} />}
 
       {/* Optional: Slight ambient fill light */}
       <ambientLight intensity={0.1} />
