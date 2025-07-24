@@ -10,28 +10,32 @@ import * as astro from "./utils/astroUtil";
 import CameraControls from "./components/CameraControls"
 
 export default function App() {
-  // Compute JD once, right now
-  const date = new Date(Date.UTC(2001, 11, 12, 12, 0, 0)); //historical (or future :) ) date set. month is zero indexed (jan = 0) yr-mo-day-h-m-s
+  const sampleRate = 10; // in seconds
+
+  const startDate = new Date(Date.UTC(2001, 11, 12, 12, 0, 0)); // historical/future start date
   const now = new Date();
-  const [jdNow, setJdNow] = useState(julian.DateToJD(now));
+  const [jdNow, setJdNow] = useState(julian.DateToJD(startDate));
   const initialPos = astro.getEarthPositionJD(jdNow);
 
   const [earthPos, setEarthPos] = useState(initialPos);
-  const [cameraMode, setCameraMode] = useState("sun"); // "sun" or "earth"
+  const [cameraMode, setCameraMode] = useState("sun");
   const [showGeometry, setShowGeometry] = useState(false);
-
 
   useEffect(() => {
     const interval = setInterval(() => {
-      const jd = julian.DateToJD(new Date());
-      const pos = astro.getEarthPositionJD(jd);
-      if (pos) setEarthPos(pos);
-      if (jd) setJdNow(jd);
-      console.log("new earth pos", pos, julian.JDToDate(jd).toUTCString());
-    }, 10000); // update every ten seconds
+      // Increment JD by sampleRate seconds
+      const jdIncrement = sampleRate / 86400; // 86400 seconds in a day
+      const newJd = jdNow + jdIncrement;
 
-    return () => clearInterval(interval); // cleanup on unmount
-  }, []);
+      const pos = astro.getEarthPositionJD(newJd);
+      if (pos) setEarthPos(pos);
+      setJdNow(newJd);
+
+      console.log("new earth pos", pos, julian.JDToDate(newJd).toUTCString());
+    }, sampleRate * 1000); // convert sampleRate to milliseconds
+
+    return () => clearInterval(interval);
+  }, [jdNow, sampleRate]);
 
   const toggleCameraMode = () => {
     setCameraMode(prev => (prev === "sun" ? "earth" : "sun"));
@@ -74,6 +78,24 @@ export default function App() {
       >
         {showGeometry ? "Hide Geometry" : "Show Geometry"}
       </button>
+
+      <div
+        style={{
+          position: "absolute",
+          top: 20,
+          right: 20,
+          zIndex: 10,
+          padding: "0.5rem 1rem",
+          background: "#111",
+          color: "#fff",
+          border: "1px solid #333",
+          borderRadius: "4px",
+          fontFamily: "monospace",
+          fontSize: "0.9rem",
+        }}
+      >
+        Simulated Time: {julian.JDToDate(jdNow).toUTCString()}
+      </div>
 
       <Canvas
         shadows
