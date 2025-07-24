@@ -5,6 +5,7 @@ import { Text } from "@react-three/drei";
 import * as THREE from "three";
 
 import { Earth, EarthOrbit, SunToEarthLine, KeyPoints } from "./components/Earth";
+import Sun from "./components/Sun";
 import * as astro from "./utils/astroUtil";
 import CameraControls from "./components/CameraControls"
 
@@ -62,21 +63,7 @@ export default function App() {
         gl={{ physicallyCorrectLights: true }}
         style={{ height: "100vh", background: "black" }}
       >
-        <pointLight
-          castShadow
-          position={[0, 0, 0]}
-          intensity={100}
-          distance={100}
-          decay={1}
-          shadow-mapSize-width={2048}
-          shadow-mapSize-height={2048}
-        />
-        <mesh position={[0, 0, 0]}>
-          <sphereGeometry args={[2, 32, 32]} />
-          <meshBasicMaterial color="yellow" />
-        </mesh>
-        <axesHelper args={[10]} />
-        <ambientLight intensity={0.1} />
+        <Sun />
         <EarthOrbit jdNow={jdNow} />
         <Earth position={earthPos} jdNow={jdNow} />
         <SunToEarthLine earthPos={earthPos} />
