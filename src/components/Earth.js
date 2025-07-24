@@ -70,12 +70,6 @@ function Earth({ position, jdNow, showGeometry }) {
         <meshStandardMaterial map={earthTexture} />
       </mesh>
 
-      {/* Equatorial torus */}
-      <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[1.0, 0.01, 16, 100]} />
-        <meshBasicMaterial color="orange" />
-      </mesh>
-
       {showGeometry && (
         <>
           {/* Local XY plane - centered on Earth */}
@@ -87,6 +81,12 @@ function Earth({ position, jdNow, showGeometry }) {
               transparent
               side={THREE.DoubleSide}
             />
+          </mesh>
+
+          {/* Equatorial torus */}
+          <mesh rotation={[Math.PI / 2, 0, 0]}>
+            <torusGeometry args={[1.0, 0.01, 16, 100]} />
+            <meshBasicMaterial color="orange" />
           </mesh>
 
           {/* Local XZ plane - centered on Earth */}
