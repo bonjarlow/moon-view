@@ -78,7 +78,13 @@ function Earth({ position, jdNow }) {
 
       {/* Local XY plane - centered on Earth */}
       <mesh rotation={[0, 0, 0]} position={[0, 0, 0]}>
-        <planeGeometry args={[10, 5]} />
+        <circleGeometry args={[2]} />
+        <meshBasicMaterial color="cyan" opacity={0.3} transparent side={THREE.DoubleSide} />
+      </mesh>
+
+      {/* Local XZ plane - centered on Earth */}
+      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
+        <circleGeometry args={[2]} />
         <meshBasicMaterial color="cyan" opacity={0.3} transparent side={THREE.DoubleSide} />
       </mesh>
 
@@ -117,7 +123,7 @@ function EarthOrbit({ jdNow }) {
       </line>
       //ecliptic plane
       <mesh rotation={[0, 0, 0]}>
-        <circleGeometry args={[eclipticRadius, 128]} />
+        <circleGeometry args={[eclipticRadius + 10, 128]} />
         <meshBasicMaterial color="orange" opacity={0.15} transparent side={THREE.DoubleSide} />
       </mesh>
     </>
