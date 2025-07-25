@@ -12,8 +12,7 @@ import CameraControls from "./components/CameraControls"
 export default function App() {
   const sampleRate = 10; // in seconds
 
-  const startDate = new Date(Date.UTC(2001, 11, 12, 12, 0, 0)); // historical/future start date
-  const now = new Date();
+  const startDate = new Date(Date.UTC(1995, 6, 10, 12, 0, 0)); // historical/future start date
   const [jdNow, setJdNow] = useState(julian.DateToJD(startDate));
   const initialPos = astro.getEarthPositionJD(jdNow);
 
@@ -123,7 +122,7 @@ export default function App() {
 
       <Canvas
         shadows
-        camera={{ position: [0, 20, 40], fov: 50, near: 0.1, far: 1000 }}
+        camera={{ position: [0, 20, 40], fov: 50, near: 0.1, far: 1000000 }}
         gl={{ physicallyCorrectLights: true }}
         style={{ height: "100vh", background: "black" }}
       >
