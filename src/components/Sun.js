@@ -9,15 +9,15 @@ export default function Sun({ showGeometry }) {
       <pointLight
         castShadow
         position={[0, 0, 0]}
-        intensity={100}
-        distance={100}
-        decay={1}
+        intensity={10}
+        distance={0}
+        decay={0}
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
       />
       {/* Visual representation of the Sun */}
       <mesh position={[0, 0, 0]}>
-        <sphereGeometry args={[2, 32, 32]} />
+        <sphereGeometry args={[110, 32, 32]} />
         <meshBasicMaterial color="yellow" />
       </mesh>
 
@@ -25,7 +25,7 @@ export default function Sun({ showGeometry }) {
       {showGeometry && <axesHelper args={[10]} />}
 
       {/* Optional: Slight ambient fill light */}
-      <ambientLight intensity={0.1} />
+      <ambientLight intensity={0.5} />
     </group>
   );
 }
