@@ -3,6 +3,7 @@ import { useLoader } from "@react-three/fiber";
 import * as THREE from "three";
 import * as astro from "../utils/astroUtil";
 import { Text } from "@react-three/drei";
+import Moon from "./Moon";
 
 function Earth({ position, jdNow, showGeometry }) {
   const earthTexture = useLoader(THREE.TextureLoader, "/textures/00_earthmap1k.jpg");
@@ -69,6 +70,9 @@ function Earth({ position, jdNow, showGeometry }) {
         <sphereGeometry args={[1, 64, 64]} />
         <meshStandardMaterial map={earthTexture} />
       </mesh>
+
+      {/* Moon (relative to Earth) */}
+      <Moon jdNow={jdNow} />
 
       {showGeometry && (
         <>
