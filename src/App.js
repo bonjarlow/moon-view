@@ -11,8 +11,9 @@ import CameraControls from "./components/CameraControls"
 
 export default function App() {
   const sampleRate = 10; // in seconds
+  const orbScale = 10; //increase radius of all bodies
 
-  const startDate = new Date(Date.UTC(1995, 6, 10, 12, 0, 0)); // historical/future start date
+  const startDate = new Date(Date.UTC(2024, 3, 8, 19, 0, 0)); // historical/future start date
   const [jdNow, setJdNow] = useState(julian.DateToJD(startDate));
   const initialPos = astro.getEarthPositionJD(jdNow);
 
@@ -126,9 +127,9 @@ export default function App() {
         gl={{ physicallyCorrectLights: true }}
         style={{ height: "100vh", background: "black" }}
       >
-        <Sun showGeometry={showGeometry}/>
+        <Sun showGeometry={showGeometry} orbScale={orbScale} />
         <EarthOrbit jdNow={jdNow} showGeometry={showGeometry} />
-        <Earth position={earthPos} jdNow={jdNow} showGeometry={showGeometry} />
+        <Earth position={earthPos} jdNow={jdNow} showGeometry={showGeometry} orbScale={orbScale} />
         <SunToEarthLine earthPos={earthPos} showGeometry={showGeometry} />
         <KeyPoints showGeometry={showGeometry} />
         <CameraControls target={target} />

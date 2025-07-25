@@ -3,9 +3,9 @@ import * as THREE from "three";
 import earthData from "astronomia/data/vsop87Bearth";
 import { moonposition } from "astronomia";
 
-//scales earth distance to 15 screen units from sun
-const SCALE = 400;
-const KM_TO_AU = 1 / 149597870.7;
+//if Earth orbits at 1 AU, has radius of unit 1 in onscreen units then
+//scales earth distance to 27,000 screen units from sun
+const SCALE = 27000;
 
 // Convert RA/Dec/r to Cartesian (flips x and y to align with our coordinate system)
 function sphericalToCartesian(lon, lat, range) {
@@ -24,8 +24,8 @@ function getEarthPositionJD(jd) {
 
 function getSublunarLatLon(jd) {
   // Get Moon's geocentric apparent position (lon, lat in ecliptic coords)
-  const moonEcl = moonposition.position(jd); // { lon, lat, range }
-  const rangeAU = moonEcl.range * KM_TO_AU * 3000;
+  const moonEcl = moonposition.position(jd); // { lon, lat, range (km) }
+  const rangeAU = moonEcl.range / 6371;
 
   // Convert ecliptic to equatorial coordinates
   const ε = 23.43928 * (Math.PI / 180); // obliquity of the ecliptic in radians

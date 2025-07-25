@@ -5,7 +5,7 @@ import * as astro from "../utils/astroUtil";
 import { Text } from "@react-three/drei";
 import Moon from "./Moon";
 
-function Earth({ position, jdNow, showGeometry }) {
+function Earth({ position, jdNow, showGeometry, orbScale }) {
   const earthTexture = useLoader(THREE.TextureLoader, "/textures/00_earthmap1k.jpg");
   const earthGroupRef = useRef();
 
@@ -60,25 +60,37 @@ function Earth({ position, jdNow, showGeometry }) {
   // Subsolar marker in local Earth space — will be transformed by group's quaternion
   const subsolarMarker = useMemo(() => {
     const { subsolarLat, subsolarLon } = astro.getSubsolarLatLon(jdNow);
-    return astro.latLonToVector3(subsolarLat, subsolarLon, 1.01);
+    return astro.latLonToVector3(subsolarLat, subsolarLon, orbScale * 1.001);
+  }, [jdNow]);
+
+  // Compute current Moon position (relative to Earth)
+  const moonPos = useMemo(() => {
+    const {lat, lon, rangeAU} = astro.getSublunarLatLon(jdNow);
+    return astro.latLonToVector3(lat, lon, rangeAU);
+  }, [jdNow]);
+
+  // get sublunarmarker (just like moonpos with shorter range to lie on earths surface)
+  const sublunarMarker = useMemo(() => {
+    const {lat, lon, rangeAU} = astro.getSublunarLatLon(jdNow);
+    return astro.latLonToVector3(lat, lon, orbScale * 1.001);
   }, [jdNow]);
 
   return (
     <group position={position} ref={earthGroupRef}>
       {/* Earth Sphere */}
-      <mesh>
-        <sphereGeometry args={[1, 64, 64]} />
+      <mesh receiveShadow>
+        <sphereGeometry args={[1*orbScale, 64, 64]} />
         <meshStandardMaterial map={earthTexture} />
       </mesh>
 
       {/* Moon (relative to Earth) */}
-      <Moon jdNow={jdNow} />
+      <Moon moonPos={moonPos} orbScale={orbScale} />
 
       {showGeometry && (
         <>
           {/* Local XY plane - centered on Earth */}
           <mesh rotation={[0, 0, 0]} position={[0, 0, 0]}>
-            <circleGeometry args={[2]} />
+            <circleGeometry args={[2*orbScale]} />
             <meshBasicMaterial
               color="cyan"
               opacity={0.3}
@@ -89,13 +101,13 @@ function Earth({ position, jdNow, showGeometry }) {
 
           {/* Equatorial torus */}
           <mesh rotation={[Math.PI / 2, 0, 0]}>
-            <torusGeometry args={[1.0, 0.01, 16, 100]} />
+            <torusGeometry args={[1.0*orbScale, 0.05, 16, 100]} />
             <meshBasicMaterial color="orange" />
           </mesh>
 
           {/* Local XZ plane - centered on Earth */}
           <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
-            <circleGeometry args={[2]} />
+            <circleGeometry args={[2*orbScale]} />
             <meshBasicMaterial
               color="cyan"
               opacity={0.3}
@@ -106,12 +118,20 @@ function Earth({ position, jdNow, showGeometry }) {
 
           {/* Subsolar position */}
           <mesh position={subsolarMarker}>
-            <sphereGeometry args={[0.03, 16, 16]} />
+            <sphereGeometry args={[0.3, 16, 16]} />
             <meshStandardMaterial color="yellow" emissive="yellow" />
           </mesh>
 
+          {/* Sublunar position */}
+          <mesh position={sublunarMarker}>
+            <sphereGeometry args={[0.3, 16, 16]} />
+            <meshStandardMaterial color="grey" emissive="grey" />
+          </mesh>
+
+          <MoonToEarthLine moonPos={ moonPos } />
+
           {/* Axes Helper */}
-          <axesHelper args={[2]} />
+          <axesHelper args={[2*orbScale]} />
         </>
       )}
     </group>
@@ -131,6 +151,9 @@ function EarthOrbit({ jdNow, showGeometry }) {
   }, [jdNow]);
 
   const geometry = useMemo(() => new THREE.BufferGeometry().setFromPoints(points), [points]);
+  //a note about ecliptic radius,
+  //it is not the mean radius of earths orbit, but just the radius at the first point
+  //which is 182 days prior to current date
   const eclipticRadius = points.length > 0 ? points[0].length() : 15;
 
   return (
@@ -143,7 +166,7 @@ function EarthOrbit({ jdNow, showGeometry }) {
       {/* Conditionally show the ecliptic plane */}
       {showGeometry && (
         <mesh rotation={[0, 0, 0]}>
-          <circleGeometry args={[eclipticRadius + 10, 128]} />
+          <circleGeometry args={[27400, 128]} />
           <meshBasicMaterial
             color="orange"
             opacity={0.15}
@@ -171,16 +194,29 @@ function SunToEarthLine({ earthPos, showGeometry }) {
   );
 }
 
+function MoonToEarthLine({ moonPos }) {
+  const points = [new THREE.Vector3(0, 0, 0), new THREE.Vector3(...moonPos)];
+  const geometry = new THREE.BufferGeometry().setFromPoints(points);
+
+  return (
+    <>
+      <line geometry={geometry}>
+        <lineBasicMaterial attach="material" color="white" linewidth={2} />
+      </line>
+    </>
+  );
+}
+
 function KeyPoints({ showGeometry }) {
   if (!showGeometry) return null;
 
-  const radius = 15; // Match your Earth's orbital radius
+  const radius = 27000; // Match your Earth's orbital radius
 
   const points = {
-    "Vernal Equinox (March)": [radius, 0, 0.1],     // +X
-    "Summer Solstice (June)": [0, radius, 0.1],     // +Y
-    "Autumn Equinox (September)": [-radius, 0, 0.1], // -X
-    "Winter Solstice (December)": [0, -radius, 0.1], // -Y
+    "Vernal Equinox (March)": [radius, 0, 1000],     // +X
+    "Summer Solstice (June)": [0, radius, 1000],     // +Y
+    "Autumn Equinox (September)": [-radius, 0, 1000], // -X
+    "Winter Solstice (December)": [0, -radius, 1000], // -Y
   };
 
   return (
@@ -193,7 +229,7 @@ function KeyPoints({ showGeometry }) {
           </mesh>
           <Text
             position={[0, 0.5, 0]}
-            fontSize={0.5}
+            fontSize={1000}
             color="white"
             anchorX="center"
             anchorY="bottom"
