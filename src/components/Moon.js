@@ -11,7 +11,7 @@ export default function Moon({ moonPos, orbScale }) {
     <>
       {/* Moon mesh */}
       <mesh castShadow receiveShadow position={moonPos}>
-        <sphereGeometry args={[0.3*orbScale, 16, 16]} />
+        <sphereGeometry args={[0.3*orbScale, 128, 128]} />
         <meshStandardMaterial color={moonColor} />
       </mesh>
     </>

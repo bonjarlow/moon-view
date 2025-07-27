@@ -118,13 +118,13 @@ function Earth({ position, jdNow, showGeometry, orbScale }) {
 
           {/* Subsolar position */}
           <mesh position={subsolarMarker}>
-            <sphereGeometry args={[0.3, 16, 16]} />
+            <sphereGeometry args={[orbScale/30.0, 16, 16]} />
             <meshStandardMaterial color="yellow" emissive="yellow" />
           </mesh>
 
           {/* Sublunar position */}
           <mesh position={sublunarMarker}>
-            <sphereGeometry args={[0.3, 16, 16]} />
+            <sphereGeometry args={[orbScale/30.0, 16, 16]} />
             <meshStandardMaterial color="grey" emissive="grey" />
           </mesh>
 
@@ -138,13 +138,13 @@ function Earth({ position, jdNow, showGeometry, orbScale }) {
   );
 }
 
-function EarthOrbit({ jdNow, showGeometry }) {
+function EarthOrbit({ jdNow, showGeometry, SCALE }) {
 
   const points = useMemo(() => {
     const pts = [];
     for (let i = 0; i <= 365; i++) {
       const jd = jdNow - 182 + i;
-      const pos = astro.getEarthPositionJD(jd);
+      const pos = astro.getEarthPositionJD(jd, SCALE);
       if (pos) pts.push(new THREE.Vector3(...pos));
     }
     return pts;
@@ -166,7 +166,7 @@ function EarthOrbit({ jdNow, showGeometry }) {
       {/* Conditionally show the ecliptic plane */}
       {showGeometry && (
         <mesh rotation={[0, 0, 0]}>
-          <circleGeometry args={[27400, 128]} />
+          <circleGeometry args={[SCALE, 128]} />
           <meshBasicMaterial
             color="orange"
             opacity={0.15}
@@ -207,16 +207,14 @@ function MoonToEarthLine({ moonPos }) {
   );
 }
 
-function KeyPoints({ showGeometry }) {
+function KeyPoints({ showGeometry, SCALE }) {
   if (!showGeometry) return null;
 
-  const radius = 27000; // Match your Earth's orbital radius
-
   const points = {
-    "Vernal Equinox (March)": [radius, 0, 1000],     // +X
-    "Summer Solstice (June)": [0, radius, 1000],     // +Y
-    "Autumn Equinox (September)": [-radius, 0, 1000], // -X
-    "Winter Solstice (December)": [0, -radius, 1000], // -Y
+    "Vernal Equinox (March)": [SCALE, 0, SCALE/20],     // +X
+    "Summer Solstice (June)": [0, SCALE, SCALE/20],     // +Y
+    "Autumn Equinox (September)": [-SCALE, 0, SCALE/20], // -X
+    "Winter Solstice (December)": [0, -SCALE, SCALE/20], // -Y
   };
 
   return (
@@ -229,7 +227,7 @@ function KeyPoints({ showGeometry }) {
           </mesh>
           <Text
             position={[0, 0.5, 0]}
-            fontSize={1000}
+            fontSize={SCALE/20}
             color="white"
             anchorX="center"
             anchorY="bottom"

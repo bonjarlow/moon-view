@@ -5,7 +5,8 @@ import { moonposition } from "astronomia";
 
 //if Earth orbits at 1 AU, has radius of unit 1 in onscreen units then
 //scales earth distance to 27,000 screen units from sun
-const SCALE = 27000;
+//const SCALE = 27000;
+//onst SCALE = 500;
 
 // Convert RA/Dec/r to Cartesian (flips x and y to align with our coordinate system)
 function sphericalToCartesian(lon, lat, range) {
@@ -16,7 +17,7 @@ function sphericalToCartesian(lon, lat, range) {
 }
 
 // Get Earth's position for Julian date
-function getEarthPositionJD(jd) {
+function getEarthPositionJD(jd, SCALE) {
   const earth = new planetposition.Planet(earthData);
   const coords = earth.position2000(jd); // {lon, lat, range (AU)}
   return sphericalToCartesian(coords.lon, coords.lat, coords.range).map(n => n * SCALE);

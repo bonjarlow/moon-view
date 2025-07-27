@@ -2,8 +2,9 @@
 import * as THREE from 'three';
 import React from 'react';
 
-export default function Sun({ showGeometry, orbScale }) {
-  const sunrad = 109; //sun radius in on screen units
+export default function Sun({ showGeometry, sunrad }) {
+  //const sunrad = 109; //sun radius in on screen units
+  //const sunrad = 10;
 
   return (
     <group>
@@ -14,17 +15,17 @@ export default function Sun({ showGeometry, orbScale }) {
         intensity={10}
         distance={0}
         decay={0}
-        shadow-mapSize-width={2048}
-        shadow-mapSize-height={2048}
+        shadow-mapSize-width={4096}
+        shadow-mapSize-height={4096}
       />
       {/* Visual representation of the Sun */}
       <mesh position={[0, 0, 0]}>
-        <sphereGeometry args={[sunrad * orbScale, 32, 32]} />
+        <sphereGeometry args={[sunrad, 32, 32]} />
         <meshBasicMaterial color="yellow" />
       </mesh>
 
       {/* Optional: Axes helper */}
-      {showGeometry && <axesHelper args={[27000]} />}
+      {showGeometry && <axesHelper args={[sunrad * 10]} />}
 
       {/* Optional: Slight ambient fill light */}
       <ambientLight intensity={0.5} />
