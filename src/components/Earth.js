@@ -1,47 +1,55 @@
-import React, { useRef, useEffect, useMemo } from "react";
+import React, { useRef, useEffect, useMemo, useState } from "react";
 import { useLoader } from "@react-three/fiber";
 import * as THREE from "three";
 import * as astro from "../utils/astroUtil";
 import { Text } from "@react-three/drei";
 import Moon from "./Moon";
 
-function Earth({ position, jdNow, showGeometry, orbScale }) {
+const Earth = ({ position, jdNow, showGeometry, orbScale }) => {
   const earthTexture = useLoader(THREE.TextureLoader, "/textures/00_earthmap1k.jpg");
   const earthGroupRef = useRef();
 
-  //position Earth in correct orientation
-  useEffect(() => {
-    if (!earthGroupRef.current) return;
-
-    // 1) Texture fix (rotate poles to match R3F orientation)
+  // Only compute once: texture fix, axial tilt, base orientation
+  const baseQuat = useMemo(() => {
     const textureFixQuat = new THREE.Quaternion().setFromAxisAngle(
       new THREE.Vector3(1, 0, 0),
       Math.PI / 2
     );
-
-    // 2) Axial tilt (~23.44° around ecliptic X axis)
     const tiltQuat = new THREE.Quaternion().setFromAxisAngle(
       new THREE.Vector3(1, 0, 0),
       THREE.MathUtils.degToRad(-23.44)
     );
+    return textureFixQuat.multiply(tiltQuat);
+  }, []);
 
-    // 3) Base orientation (tilt + texture fix)
-    const baseQuat = textureFixQuat.clone().multiply(tiltQuat);
+  const spinAxisWorld = useMemo(() => {
+    return new THREE.Vector3(0, 1, 0).applyQuaternion(baseQuat).normalize();
+  }, [baseQuat]);
 
-    // 4) Subsolar vector in local Earth space
-    const { subsolarLat, subsolarLon } = astro.getSubsolarLatLon(jdNow);
-    const subsolarLocal = astro.latLonToVector3(subsolarLat, subsolarLon).normalize();
+  // Subsolar marker in local Earth space — will be transformed by group's quaternion
+  const subsolar = useMemo(() => astro.getSubsolarLatLon(jdNow), [jdNow]);
+  const subsolarMarker = useMemo(() => {
+    return astro.latLonToVector3(subsolar.subsolarLat, subsolar.subsolarLon, orbScale * 1.001);
+  }, [subsolar, orbScale]);
 
-    // 5) Convert subsolar vector to world space (without spin)
+  //sublunar marker
+  const sublunar = useMemo(() => astro.getSublunarLatLon(jdNow), [jdNow]);
+  const moonPos = useMemo(() => {
+    return astro.latLonToVector3(sublunar.lat, sublunar.lon, sublunar.rangeAU);
+  }, [sublunar]);
+  const sublunarMarker = useMemo(() => {
+    return astro.latLonToVector3(sublunar.lat, sublunar.lon, orbScale * 1.001);
+  }, [sublunar, orbScale]);
+
+  useEffect(() => {
+    if (!earthGroupRef.current) return;
+
+    // Dynamic: compute Earth's rotation to align subsolar point with Sun
+    const subsolarLocal = astro.latLonToVector3(subsolar.subsolarLat, subsolar.subsolarLon).normalize();
     const subsolarWorld = subsolarLocal.clone().applyQuaternion(baseQuat);
 
-    // 6) Compute Sun direction (from Earth to Sun) in world space
-    const sunDir = new THREE.Vector3(...position).normalize().negate(); // toward Sun
+    const sunDir = new THREE.Vector3(...position).normalize().negate();
 
-    // 7) Earth's spin axis in world space (local Y axis after base orientation)
-    const spinAxisWorld = new THREE.Vector3(0, 1, 0).applyQuaternion(baseQuat).normalize();
-
-    // 8) Compute angle between subsolar point and sun direction in the plane perpendicular to spin axis
     const projectedSubsolar = subsolarWorld.clone().projectOnPlane(spinAxisWorld).normalize();
     const projectedSun = sunDir.clone().projectOnPlane(spinAxisWorld).normalize();
 
@@ -49,31 +57,11 @@ function Earth({ position, jdNow, showGeometry, orbScale }) {
     const cross = projectedSubsolar.clone().cross(projectedSun);
     if (cross.dot(spinAxisWorld) < 0) spinAngle = -spinAngle;
 
-    // 9) Create spin quaternion around Earth's spin axis
     const spinQuat = new THREE.Quaternion().setFromAxisAngle(spinAxisWorld, spinAngle);
-
-    // 10) Final orientation: spin * tilt * texture fix
     const finalQuat = spinQuat.clone().multiply(baseQuat);
+
     earthGroupRef.current.quaternion.copy(finalQuat);
-  }, [position, jdNow]);
-
-  // Subsolar marker in local Earth space — will be transformed by group's quaternion
-  const subsolarMarker = useMemo(() => {
-    const { subsolarLat, subsolarLon } = astro.getSubsolarLatLon(jdNow);
-    return astro.latLonToVector3(subsolarLat, subsolarLon, orbScale * 1.001);
-  }, [jdNow]);
-
-  // Compute current Moon position (relative to Earth)
-  const moonPos = useMemo(() => {
-    const {lat, lon, rangeAU} = astro.getSublunarLatLon(jdNow);
-    return astro.latLonToVector3(lat, lon, rangeAU);
-  }, [jdNow]);
-
-  // get sublunarmarker (just like moonpos with shorter range to lie on earths surface)
-  const sublunarMarker = useMemo(() => {
-    const {lat, lon, rangeAU} = astro.getSublunarLatLon(jdNow);
-    return astro.latLonToVector3(lat, lon, orbScale * 1.001);
-  }, [jdNow]);
+  }, [jdNow, position, baseQuat, spinAxisWorld]);
 
   return (
     <group position={position} ref={earthGroupRef}>
@@ -139,37 +127,48 @@ function Earth({ position, jdNow, showGeometry, orbScale }) {
 }
 
 function EarthOrbit({ jdNow, showGeometry, SCALE }) {
-
-  const points = useMemo(() => {
-    const pts = [];
+  const [orbitJD, setOrbitJD] = useState(jdNow);
+  const [points, setPoints] = useState(() => {
+    // Compute initial orbit on mount
+    const initialPoints = [];
     for (let i = 0; i <= 365; i++) {
       const jd = jdNow - 182 + i;
       const pos = astro.getEarthPositionJD(jd, SCALE);
-      if (pos) pts.push(new THREE.Vector3(...pos));
+      if (pos) initialPoints.push(new THREE.Vector3(...pos));
     }
-    return pts;
-  }, [jdNow]);
+    return initialPoints;
+  });
 
-  const geometry = useMemo(() => new THREE.BufferGeometry().setFromPoints(points), [points]);
-  //a note about ecliptic radius,
-  //it is not the mean radius of earths orbit, but just the radius at the first point
-  //which is 182 days prior to current date
-  const eclipticRadius = points.length > 0 ? points[0].length() : 15;
+  // Recompute only if jdNow drifts beyond ±182 days
+  useEffect(() => {
+    if (Math.abs(jdNow - orbitJD) > 182) {
+      const newPoints = [];
+      for (let i = 0; i <= 365; i++) {
+        const jd = jdNow - 182 + i;
+        const pos = astro.getEarthPositionJD(jd, SCALE);
+        if (pos) newPoints.push(new THREE.Vector3(...pos));
+      }
+      setOrbitJD(jdNow);
+      setPoints(newPoints);
+    }
+  }, [jdNow, orbitJD, SCALE]);
+
+  const geometry = useMemo(() => {
+    return new THREE.BufferGeometry().setFromPoints(points);
+  }, [points]);
 
   return (
     <>
-      {/* Earth orbit path (always shown) */}
       <line geometry={geometry}>
         <lineBasicMaterial attach="material" color="lightblue" linewidth={2} />
       </line>
 
-      {/* Conditionally show the ecliptic plane */}
       {showGeometry && (
         <mesh rotation={[0, 0, 0]}>
           <circleGeometry args={[SCALE, 128]} />
           <meshBasicMaterial
             color="orange"
-            opacity={0.15}
+            opacity={0.10}
             transparent
             side={THREE.DoubleSide}
           />

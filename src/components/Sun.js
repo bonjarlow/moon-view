@@ -1,5 +1,4 @@
 // components/Sun.js
-import * as THREE from 'three';
 import React from 'react';
 
 export default function Sun({ showGeometry, sunrad }) {
@@ -15,8 +14,8 @@ export default function Sun({ showGeometry, sunrad }) {
         intensity={10}
         distance={0}
         decay={0}
-        shadow-mapSize-width={4096}
-        shadow-mapSize-height={4096}
+        shadow-mapSize-width={1028}
+        shadow-mapSize-height={1028}
       />
       {/* Visual representation of the Sun */}
       <mesh position={[0, 0, 0]}>

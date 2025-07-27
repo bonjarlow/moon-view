@@ -1,8 +1,6 @@
-import React, { useRef, useEffect, useState, useMemo } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import React, { useEffect, useState } from "react";
+import { Canvas } from "@react-three/fiber";
 import { julian } from "astronomia";
-import { Text } from "@react-three/drei";
-import * as THREE from "three";
 
 import { Earth, EarthOrbit, SunToEarthLine, KeyPoints } from "./components/Earth";
 import Sun from "./components/Sun";
@@ -28,11 +26,11 @@ export default function App() {
     ? { SCALE: 27000, orbScale: 1, sunrad: 109 }
     : { SCALE: 500, orbScale: 10, sunrad: 50 };
 
-  const [sampleRate, setSampleRate] = useState(0.01); // seconds per sample
-  const [speedUp, setSpeedUp] = useState(1); //speedUp = 1 means each sample increments sim by 1 second
+  const [sampleRate, setSampleRate] = useState(1); // seconds per sample
+  const [speedUp, setSpeedUp] = useState(1.0); //speedUp = 1 means each sample increments sim by 1 second
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~ TODO: ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  //buttons for play, pause, time scaling
+  //better buttons for play, pause, time scaling (fix time scaling so it's consistent speed up)
   //Camera improvements at both scales
   //camera view from earth location
   //constellation maps
@@ -51,7 +49,7 @@ export default function App() {
     }, sampleRate * 1000);
 
     return () => clearInterval(interval);
-  }, [sampleRate, speedUp, jdNow]);
+  }, [sampleRate, speedUp, jdNow, scaleSettings.SCALE]);
 
   const toggleCameraMode = () => {
     setCameraMode(prev => (prev === "sun" ? "earth" : "sun"));
@@ -146,7 +144,7 @@ export default function App() {
 
       <Canvas
         shadows
-        camera={{ position: [0, 20, 40], fov: 50, near: 0.1, far: 1000000 }}
+        camera={{ position: [0, -1000, 200], fov: 50, near: 0.1, far: 1000000 }}
         gl={{ physicallyCorrectLights: true }}
         style={{ height: "100vh", background: "black" }}
       >

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { julian } from "astronomia";
 
 export default function SimulationControls({ jdNow, sampleRate, setSampleRate, speedUp, setSpeedUp }) {
@@ -67,10 +66,10 @@ export default function SimulationControls({ jdNow, sampleRate, setSampleRate, s
             fontFamily: "monospace",
           }}
         >
-          <option value={1}>1× (Real Time)</option>
-          <option value={100}>100×</option>
-          <option value={1000}>1,000×</option>
-          <option value={100000}>100,000×</option>
+          <option value={1.0}>1× (Real Time)</option>
+          <option value={100.0}>100×</option>
+          <option value={1000.0}>1,000×</option>
+          <option value={100000.0}>100,000×</option>
         </select>
       </label>
     </div>
