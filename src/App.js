@@ -4,9 +4,11 @@ import { julian } from "astronomia";
 
 import { Earth, EarthOrbit, SunToEarthLine, KeyPoints } from "./components/Earth";
 import Sun from "./components/Sun";
+import StarsAndConstellations from "./components/StarsAndConstellations";
 import * as astro from "./utils/astroUtil";
-import CameraControls from "./components/CameraControls"
-import SimulationControls from "./components/SimulationControls"
+import useHipparcosData from "./utils/useHipparcosData";
+import CameraControls from "./components/CameraControls";
+import SimulationControls from "./components/SimulationControls";
 
 export default function App() {
 
@@ -28,6 +30,8 @@ export default function App() {
 
   const [sampleRate, setSampleRate] = useState(1); // seconds per sample
   const [speedUp, setSpeedUp] = useState(1.0); //speedUp = 1 means each sample increments sim by 1 second
+
+  const { stars, constellations } = useHipparcosData();
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~ TODO: ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   //better buttons for play, pause, time scaling (fix time scaling so it's consistent speed up)
@@ -153,6 +157,7 @@ export default function App() {
         <Earth position={earthPos} jdNow={jdNow} showGeometry={showGeometry} orbScale={scaleSettings.orbScale} />
         <SunToEarthLine earthPos={earthPos} showGeometry={showGeometry} />
         <KeyPoints showGeometry={showGeometry} SCALE={scaleSettings.SCALE} />
+        <StarsAndConstellations stars={stars} constellations={constellations} />
         <CameraControls target={target} />
 
       </Canvas>

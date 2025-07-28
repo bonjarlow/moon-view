@@ -11,6 +11,13 @@
 # production
 /build
 
+public/data/convert-hipparcos-to-json.py
+public/data/hipparcos_6_concise.js
+public/data/constellation-lines-hip.utf8
+public/data/convert-constellation-utf8-to-json.py
+public/data/convert_hipparcos_to_ecliptic.py
+public/data/hipparcos_catalog_6_concise.json
+
 # misc
 .DS_Store
 .env.local
