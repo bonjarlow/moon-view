@@ -5,7 +5,7 @@ import * as astro from "../utils/astroUtil";
 import { Text } from "@react-three/drei";
 import Moon from "./Moon";
 
-const Earth = ({ position, jdNow, showGeometry, orbScale }) => {
+const Earth = ({ position, jdNow, showGeometry, orbScale, onQuatReady }) => {
   const earthTexture = useLoader(THREE.TextureLoader, "/textures/00_earthmap1k.jpg");
   const earthGroupRef = useRef();
 
@@ -61,13 +61,14 @@ const Earth = ({ position, jdNow, showGeometry, orbScale }) => {
     const finalQuat = spinQuat.clone().multiply(baseQuat);
 
     earthGroupRef.current.quaternion.copy(finalQuat);
+    onQuatReady?.(finalQuat); // Pass quaternion back up to App
   }, [jdNow, position, baseQuat, spinAxisWorld]);
 
   return (
     <group position={position} ref={earthGroupRef}>
       {/* Earth Sphere */}
       <mesh receiveShadow>
-        <sphereGeometry args={[1*orbScale, 64, 64]} />
+        <sphereGeometry args={[1*orbScale, 128, 128]} />
         <meshStandardMaterial map={earthTexture} />
       </mesh>
 

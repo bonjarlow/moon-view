@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Canvas } from "@react-three/fiber";
 import { julian } from "astronomia";
+import * as THREE from "three";
 
 import { Earth, EarthOrbit, SunToEarthLine, KeyPoints } from "./components/Earth";
 import Sun from "./components/Sun";
@@ -9,6 +10,7 @@ import * as astro from "./utils/astroUtil";
 import useHipparcosData from "./utils/useHipparcosData";
 import CameraControls from "./components/CameraControls";
 import SimulationControls from "./components/SimulationControls";
+import CameraView from "./components/CameraView";
 
 export default function App() {
 
@@ -17,6 +19,7 @@ export default function App() {
   const initialPos = astro.getEarthPositionJD(jdNow);
 
   const [earthPos, setEarthPos] = useState(initialPos);
+  const [earthQuat, setEarthQuat] = useState(() => new THREE.Quaternion()); //gives correct earth spin
   const [cameraMode, setCameraMode] = useState("sun");
   const [showGeometry, setShowGeometry] = useState(false);
 
@@ -32,6 +35,14 @@ export default function App() {
   const [speedUp, setSpeedUp] = useState(1.0); //speedUp = 1 means each sample increments sim by 1 second
 
   const { stars, constellations } = useHipparcosData();
+  const selectedConstellations = useMemo(() => {
+  const names = ["UMa", "UMi", "Ori", "Cas", "Cnc", "Gem", "Leo", "Aqr", "Cap", "Psc", "Ari", "Tau", "Vir", "Lib", "Sco", "Sgr"];
+  return Object.fromEntries(
+    names
+      .filter(name => constellations[name])
+      .map(name => [name, constellations[name]])
+  );
+}, [constellations]);
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~ TODO: ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   //better buttons for play, pause, time scaling (fix time scaling so it's consistent speed up)
@@ -56,10 +67,12 @@ export default function App() {
   }, [sampleRate, speedUp, jdNow, scaleSettings.SCALE]);
 
   const toggleCameraMode = () => {
-    setCameraMode(prev => (prev === "sun" ? "earth" : "sun"));
+    setCameraMode(prev => {
+      if (prev === "sun") return "earth";
+      if (prev === "earth") return "surface";
+      return "sun";
+    });
   };
-
-  const target = cameraMode === "sun" ? [0, 0, 0] : earthPos;
 
   return (
     <>
@@ -154,11 +167,14 @@ export default function App() {
       >
         <Sun showGeometry={showGeometry} sunrad={scaleSettings.sunrad} />
         <EarthOrbit jdNow={jdNow} showGeometry={showGeometry} SCALE={scaleSettings.SCALE} />
-        <Earth position={earthPos} jdNow={jdNow} showGeometry={showGeometry} orbScale={scaleSettings.orbScale} />
+        <Earth position={earthPos} jdNow={jdNow} showGeometry={showGeometry} orbScale={scaleSettings.orbScale} onQuatReady={setEarthQuat} />
         <SunToEarthLine earthPos={earthPos} showGeometry={showGeometry} />
         <KeyPoints showGeometry={showGeometry} SCALE={scaleSettings.SCALE} />
-        <StarsAndConstellations stars={stars} constellations={constellations} />
-        <CameraControls target={target} />
+        <StarsAndConstellations stars={stars} constellations={selectedConstellations} />
+        <CameraView
+          cameraMode={cameraMode} earthPos={earthPos}
+          lat={THREE.MathUtils.degToRad(41)} lon={THREE.MathUtils.degToRad(71)} orbScale={scaleSettings.orbScale} earthQuat={earthQuat}
+        />
 
       </Canvas>
     </>
