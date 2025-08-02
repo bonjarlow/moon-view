@@ -22,7 +22,6 @@ function StarsAndConstellations({ stars, constellations }) {
 
       const color = astro.bvToRGB(star["B-V"]);
       colors.push(color.r, color.g, color.b);
-      console.log(color.r, color.g, color.b);
     });
 
     const geometry = new THREE.BufferGeometry();
