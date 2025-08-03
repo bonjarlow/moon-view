@@ -36,7 +36,8 @@ export default function App() {
 
   const { stars, constellations } = useHipparcosData();
   const selectedConstellations = useMemo(() => {
-  const names = ["UMa", "UMi", "Ori", "Cas", "Cnc", "Gem", "Leo", "Aqr", "Cap", "Psc", "Ari", "Tau", "Vir", "Lib", "Sco", "Sgr"];
+  const names = ["UMa", "UMi", "Ori", "Cas", "Cnc", "Gem", "Leo",
+  "Aqr", "Cap", "Psc", "Ari", "Tau", "Vir", "Lib", "Sco", "Sgr"];
   return Object.fromEntries(
     names
       .filter(name => constellations[name])
@@ -167,13 +168,17 @@ export default function App() {
       >
         <Sun showGeometry={showGeometry} sunrad={scaleSettings.sunrad} />
         <EarthOrbit jdNow={jdNow} showGeometry={showGeometry} SCALE={scaleSettings.SCALE} />
-        <Earth position={earthPos} jdNow={jdNow} showGeometry={showGeometry} orbScale={scaleSettings.orbScale} onQuatReady={setEarthQuat} />
+        <Earth
+          position={earthPos} jdNow={jdNow} showGeometry={showGeometry}
+          orbScale={scaleSettings.orbScale} onQuatReady={setEarthQuat}
+        />
         <SunToEarthLine earthPos={earthPos} showGeometry={showGeometry} />
         <KeyPoints showGeometry={showGeometry} SCALE={scaleSettings.SCALE} />
         <StarsAndConstellations stars={stars} constellations={selectedConstellations} />
         <CameraView
           cameraMode={cameraMode} earthPos={earthPos}
-          lat={THREE.MathUtils.degToRad(41)} lon={THREE.MathUtils.degToRad(71)} orbScale={scaleSettings.orbScale} earthQuat={earthQuat}
+          lat={THREE.MathUtils.degToRad(41)} lon={THREE.MathUtils.degToRad(71)}
+          orbScale={scaleSettings.orbScale} earthQuat={earthQuat}
         />
 
       </Canvas>
