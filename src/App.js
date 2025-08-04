@@ -175,7 +175,10 @@ export default function App() {
           position={earthPos} jdNow={jdNow} showGeometry={showGeometry}
           orbScale={scaleSettings.orbScale} quaternion={earthQuat}
         />
-        <Moon jdNow={jdNow} earthPos={earthPos} earthQuat={earthQuat} orbScale={scaleSettings.orbScale} />
+        <Moon
+          jdNow={jdNow} earthPos={earthPos} earthQuat={earthQuat}
+          orbScale={scaleSettings.orbScale} showGeometry={showGeometry}
+        />
         <SunToEarthLine earthPos={earthPos} showGeometry={showGeometry} />
         <KeyPoints showGeometry={showGeometry} SCALE={scaleSettings.SCALE} />
         <StarsAndConstellations stars={stars} constellations={selectedConstellations} />

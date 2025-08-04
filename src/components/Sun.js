@@ -11,7 +11,7 @@ export default function Sun({ showGeometry, sunrad }) {
       <pointLight
         castShadow
         position={[0, 0, 0]}
-        intensity={10}
+        intensity={5}
         distance={0}
         decay={0}
         shadow-mapSize-width={1028}

@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { useLoader } from "@react-three/fiber";
 import * as astro from "../utils/astroUtil";
 
-export default function Moon({ jdNow, earthPos, orbScale, earthQuat }) {
+export default function Moon({ jdNow, earthPos, orbScale, earthQuat, showGeometry }) {
   const moonTexture = useLoader(THREE.TextureLoader, "/textures/lroc_color_poles_1k.jpg");
 
   const sublunar = useMemo(() => astro.getSublunarLatLon(jdNow), [jdNow]);
@@ -18,12 +18,14 @@ export default function Moon({ jdNow, earthPos, orbScale, earthQuat }) {
   }, [earthPos, moonRelativePos]);
 
   return (
-    <>
+    <group position={moonPos}>
       {/* Moon mesh */}
-      <mesh castShadow receiveShadow position={moonPos}>
-        <sphereGeometry args={[0.3*orbScale, 128, 128]} />
+      <mesh castShadow receiveShadow>
+        <sphereGeometry args={[0.3 * orbScale, 128, 128]} />
         <meshStandardMaterial map={moonTexture} />
       </mesh>
-    </>
+
+      {showGeometry && (<axesHelper args={[2 * orbScale]} /> )}
+    </group>
   );
 }
