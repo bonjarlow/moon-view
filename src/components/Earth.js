@@ -1,30 +1,11 @@
-import React, { useRef, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useLoader } from "@react-three/fiber";
 import * as THREE from "three";
 import * as astro from "../utils/astroUtil";
 import { Text } from "@react-three/drei";
-import Moon from "./Moon";
 
-const Earth = ({ position, jdNow, showGeometry, orbScale, onQuatReady }) => {
+const Earth = ({ position, jdNow, showGeometry, orbScale, quaternion }) => {
   const earthTexture = useLoader(THREE.TextureLoader, "/textures/00_earthmap1k.jpg");
-  const earthGroupRef = useRef();
-
-  // Only compute once: texture fix, axial tilt, base orientation
-  const baseQuat = useMemo(() => {
-    const textureFixQuat = new THREE.Quaternion().setFromAxisAngle(
-      new THREE.Vector3(1, 0, 0),
-      Math.PI / 2
-    );
-    const tiltQuat = new THREE.Quaternion().setFromAxisAngle(
-      new THREE.Vector3(1, 0, 0),
-      THREE.MathUtils.degToRad(-23.44)
-    );
-    return textureFixQuat.multiply(tiltQuat);
-  }, []);
-
-  const spinAxisWorld = useMemo(() => {
-    return new THREE.Vector3(0, 1, 0).applyQuaternion(baseQuat).normalize();
-  }, [baseQuat]);
 
   // Subsolar marker in local Earth space — will be transformed by group's quaternion
   const subsolar = useMemo(() => astro.getSubsolarLatLon(jdNow), [jdNow]);
@@ -41,39 +22,13 @@ const Earth = ({ position, jdNow, showGeometry, orbScale, onQuatReady }) => {
     return astro.latLonToVector3(sublunar.lat, sublunar.lon, orbScale * 1.001);
   }, [sublunar, orbScale]);
 
-  useEffect(() => {
-    if (!earthGroupRef.current) return;
-
-    // Dynamic: compute Earth's rotation to align subsolar point with Sun
-    const subsolarLocal = astro.latLonToVector3(subsolar.subsolarLat, subsolar.subsolarLon).normalize();
-    const subsolarWorld = subsolarLocal.clone().applyQuaternion(baseQuat);
-
-    const sunDir = new THREE.Vector3(...position).normalize().negate();
-
-    const projectedSubsolar = subsolarWorld.clone().projectOnPlane(spinAxisWorld).normalize();
-    const projectedSun = sunDir.clone().projectOnPlane(spinAxisWorld).normalize();
-
-    let spinAngle = projectedSubsolar.angleTo(projectedSun);
-    const cross = projectedSubsolar.clone().cross(projectedSun);
-    if (cross.dot(spinAxisWorld) < 0) spinAngle = -spinAngle;
-
-    const spinQuat = new THREE.Quaternion().setFromAxisAngle(spinAxisWorld, spinAngle);
-    const finalQuat = spinQuat.clone().multiply(baseQuat);
-
-    earthGroupRef.current.quaternion.copy(finalQuat);
-    onQuatReady?.(finalQuat); // Pass quaternion back up to App
-  }, [jdNow, position, baseQuat, spinAxisWorld]);
-
   return (
-    <group position={position} ref={earthGroupRef}>
+    <group position={position} quaternion={quaternion}>
       {/* Earth Sphere */}
       <mesh receiveShadow>
         <sphereGeometry args={[1*orbScale, 128, 128]} />
         <meshStandardMaterial map={earthTexture} />
       </mesh>
-
-      {/* Moon (relative to Earth) */}
-      <Moon moonPos={moonPos} orbScale={orbScale} />
 
       {showGeometry && (
         <>

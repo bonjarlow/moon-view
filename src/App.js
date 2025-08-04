@@ -5,10 +5,10 @@ import * as THREE from "three";
 
 import { Earth, EarthOrbit, SunToEarthLine, KeyPoints } from "./components/Earth";
 import Sun from "./components/Sun";
+import Moon from "./components/Moon"
 import StarsAndConstellations from "./components/StarsAndConstellations";
 import * as astro from "./utils/astroUtil";
 import useHipparcosData from "./utils/useHipparcosData";
-import CameraControls from "./components/CameraControls";
 import SimulationControls from "./components/SimulationControls";
 import CameraView from "./components/CameraView";
 
@@ -19,7 +19,6 @@ export default function App() {
   const initialPos = astro.getEarthPositionJD(jdNow);
 
   const [earthPos, setEarthPos] = useState(initialPos);
-  const [earthQuat, setEarthQuat] = useState(() => new THREE.Quaternion()); //gives correct earth spin
   const [cameraMode, setCameraMode] = useState("sun");
   const [showGeometry, setShowGeometry] = useState(false);
 
@@ -66,6 +65,10 @@ export default function App() {
 
     return () => clearInterval(interval);
   }, [sampleRate, speedUp, jdNow, scaleSettings.SCALE]);
+
+  const earthQuat = useMemo(() => {
+    return astro.computeEarthQuat(jdNow, earthPos);
+  }, [jdNow, earthPos]);
 
   const toggleCameraMode = () => {
     setCameraMode(prev => {
@@ -170,8 +173,9 @@ export default function App() {
         <EarthOrbit jdNow={jdNow} showGeometry={showGeometry} SCALE={scaleSettings.SCALE} />
         <Earth
           position={earthPos} jdNow={jdNow} showGeometry={showGeometry}
-          orbScale={scaleSettings.orbScale} onQuatReady={setEarthQuat}
+          orbScale={scaleSettings.orbScale} quaternion={earthQuat}
         />
+        <Moon jdNow={jdNow} earthPos={earthPos} earthQuat={earthQuat} orbScale={scaleSettings.orbScale} />
         <SunToEarthLine earthPos={earthPos} showGeometry={showGeometry} />
         <KeyPoints showGeometry={showGeometry} SCALE={scaleSettings.SCALE} />
         <StarsAndConstellations stars={stars} constellations={selectedConstellations} />

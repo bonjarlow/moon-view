@@ -1,13 +1,21 @@
 import * as THREE from "three";
-import { useRef, useMemo } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useMemo } from "react";
 import { useLoader } from "@react-three/fiber";
-import { latLonToVector3, getSublunarLatLon } from "../utils/astroUtil";
+import * as astro from "../utils/astroUtil";
 
-export default function Moon({ moonPos, orbScale }) {
-  const moonRef = useRef();
+export default function Moon({ jdNow, earthPos, orbScale, earthQuat }) {
   const moonTexture = useLoader(THREE.TextureLoader, "/textures/lroc_color_poles_1k.jpg");
-  const moonColor = "gray";
+
+  const sublunar = useMemo(() => astro.getSublunarLatLon(jdNow), [jdNow]);
+
+  const moonRelativePos = useMemo(() => {
+    const local = astro.latLonToVector3(sublunar.lat, sublunar.lon, sublunar.rangeAU);
+    return local.applyQuaternion(earthQuat); // Earth orientation applied to local vector
+  }, [sublunar, earthQuat]);
+
+  const moonPos = useMemo(() => {
+    return new THREE.Vector3(...earthPos).add(moonRelativePos);
+  }, [earthPos, moonRelativePos]);
 
   return (
     <>

@@ -149,7 +149,36 @@ function bvToRGB(bv) {
   return new THREE.Color(r, g, b);
 }
 
+function computeEarthQuat(jdNow, earthPos) {
+  const textureFixQuat = new THREE.Quaternion().setFromAxisAngle(
+    new THREE.Vector3(1, 0, 0),
+    Math.PI / 2
+  );
+  const tiltQuat = new THREE.Quaternion().setFromAxisAngle(
+    new THREE.Vector3(1, 0, 0),
+    THREE.MathUtils.degToRad(-23.44)
+  );
+  const baseQuat = textureFixQuat.clone().multiply(tiltQuat);
+  const spinAxisWorld = new THREE.Vector3(0, 1, 0).applyQuaternion(baseQuat).normalize();
+
+  const subsolar = getSubsolarLatLon(jdNow);
+  const subsolarLocal = latLonToVector3(subsolar.subsolarLat, subsolar.subsolarLon).normalize();
+  const subsolarWorld = subsolarLocal.clone().applyQuaternion(baseQuat);
+
+  const sunDir = new THREE.Vector3(...earthPos).normalize().negate();
+  const projectedSubsolar = subsolarWorld.clone().projectOnPlane(spinAxisWorld).normalize();
+  const projectedSun = sunDir.clone().projectOnPlane(spinAxisWorld).normalize();
+
+  let spinAngle = projectedSubsolar.angleTo(projectedSun);
+  const cross = projectedSubsolar.clone().cross(projectedSun);
+  if (cross.dot(spinAxisWorld) < 0) spinAngle = -spinAngle;
+
+  const spinQuat = new THREE.Quaternion().setFromAxisAngle(spinAxisWorld, spinAngle);
+  return spinQuat.multiply(baseQuat);
+}
+
 export {
+  computeEarthQuat,
   sphericalToCartesian,
   getEarthPositionJD,
   getSublunarLatLon,
