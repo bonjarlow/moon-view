@@ -4,20 +4,15 @@ import * as THREE from "three";
 import * as astro from "../utils/astroUtil";
 import { Text } from "@react-three/drei";
 
-const Earth = ({ position, jdNow, showGeometry, orbScale, quaternion }) => {
+function Earth({ position, jdNow, showGeometry, orbScale, quaternion, subsolar, sublunar }) {
   const earthTexture = useLoader(THREE.TextureLoader, "/textures/00_earthmap1k.jpg");
 
   // Subsolar marker in local Earth space — will be transformed by group's quaternion
-  const subsolar = useMemo(() => astro.getSubsolarLatLon(jdNow), [jdNow]);
   const subsolarMarker = useMemo(() => {
     return astro.latLonToVector3(subsolar.subsolarLat, subsolar.subsolarLon, orbScale * 1.001);
   }, [subsolar, orbScale]);
 
   //sublunar marker
-  const sublunar = useMemo(() => astro.getSublunarLatLon(jdNow), [jdNow]);
-  const moonPos = useMemo(() => {
-    return astro.latLonToVector3(sublunar.lat, sublunar.lon, sublunar.rangeAU);
-  }, [sublunar]);
   const sublunarMarker = useMemo(() => {
     return astro.latLonToVector3(sublunar.lat, sublunar.lon, orbScale * 1.001);
   }, [sublunar, orbScale]);
@@ -71,8 +66,6 @@ const Earth = ({ position, jdNow, showGeometry, orbScale, quaternion }) => {
             <sphereGeometry args={[orbScale/30.0, 16, 16]} />
             <meshStandardMaterial color="grey" emissive="grey" />
           </mesh>
-
-          <MoonToEarthLine moonPos={ moonPos } />
 
           {/* Axes Helper */}
           <axesHelper args={[2*orbScale]} />
@@ -145,19 +138,6 @@ function SunToEarthLine({ earthPos, showGeometry }) {
           <lineBasicMaterial attach="material" color="white" linewidth={2} />
         </line>
       )}
-    </>
-  );
-}
-
-function MoonToEarthLine({ moonPos }) {
-  const points = [new THREE.Vector3(0, 0, 0), new THREE.Vector3(...moonPos)];
-  const geometry = new THREE.BufferGeometry().setFromPoints(points);
-
-  return (
-    <>
-      <line geometry={geometry}>
-        <lineBasicMaterial attach="material" color="white" linewidth={2} />
-      </line>
     </>
   );
 }
