@@ -4,7 +4,6 @@ import CameraControls from "./CameraControls";
 import * as THREE from "three";
 import * as astro from "../utils/astroUtil";
 
-
 export default function CameraView({ cameraMode, earthPos, lat, lon, orbScale, earthQuat }) {
   const { camera } = useThree();
 
@@ -36,8 +35,8 @@ export default function CameraView({ cameraMode, earthPos, lat, lon, orbScale, e
     const raStep = 0.01;
     const decStep = 0.01;
 
-    if (pressedKeys.current["ArrowLeft"]) raRef.current -= raStep;
-    if (pressedKeys.current["ArrowRight"]) raRef.current += raStep;
+    if (pressedKeys.current["ArrowLeft"]) raRef.current += raStep;
+    if (pressedKeys.current["ArrowRight"]) raRef.current -= raStep;
     if (pressedKeys.current["ArrowUp"]) decRef.current += decStep;
     if (pressedKeys.current["ArrowDown"]) decRef.current -= decStep;
 
