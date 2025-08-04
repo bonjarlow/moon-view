@@ -106,26 +106,6 @@ function latLonToVector3(lat, lon, radius = 1) {
   return new THREE.Vector3(x, y, z);
 }
 
-// Takes RA (deg), Dec (deg), returns [x, y, z] in ecliptic Cartesian
-function equatorialToEclipticCartesian(raDeg, decDeg, distance = 1) {
-  const ra = THREE.MathUtils.degToRad(raDeg);
-  const dec = THREE.MathUtils.degToRad(decDeg);
-
-  // Earth's obliquity (tilt of axis) ≈ 23.439281° for J2000
-  const epsilon = THREE.MathUtils.degToRad(23.439281);
-
-  // Equatorial to Cartesian
-  const xEq = Math.cos(dec) * Math.cos(ra);
-  const yEq = Math.cos(dec) * Math.sin(ra);
-  const zEq = Math.sin(dec);
-
-  // Rotate about X to convert to ecliptic
-  const yEc = yEq * Math.cos(epsilon) - zEq * Math.sin(epsilon);
-  const zEc = yEq * Math.sin(epsilon) + zEq * Math.cos(epsilon);
-
-  return new THREE.Vector3(xEq * distance, yEc * distance, zEc * distance);
-}
-
 function bvToRGB(bv) {
   bv = Math.max(-0.4, Math.min(2.0, bv));
   let r = 1, g = 1, b = 1;
@@ -185,6 +165,5 @@ export {
   latLonToVector3,
   getSubsolarLatLon,
   getGMST,
-  equatorialToEclipticCartesian,
   bvToRGB
 };
