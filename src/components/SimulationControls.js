@@ -1,7 +1,20 @@
 import { julian } from "astronomia";
 
-export default function SimulationControls({ jdNow, sampleRate, setSampleRate, speedUp, setSpeedUp }) {
+export default function SimulationControls({
+  jdNow,
+  setJdNow,
+  sampleRate,
+  setSampleRate,
+  speedUp,
+  setSpeedUp,
+}) {
   const isPaused = sampleRate === 0;
+
+  const handleResetToNow = () => {
+    const now = new Date();
+    const jd = julian.DateToJD(now);
+    setJdNow(jd);
+  };
 
   return (
     <div
@@ -51,7 +64,7 @@ export default function SimulationControls({ jdNow, sampleRate, setSampleRate, s
       </button>
 
       {/* SpeedUp Selector */}
-      <label style={{ display: "block", marginBottom: "0.25rem" }}>
+      <label style={{ display: "block", marginBottom: "0.5rem" }}>
         Speed:
         <select
           value={speedUp}
@@ -72,6 +85,23 @@ export default function SimulationControls({ jdNow, sampleRate, setSampleRate, s
           <option value={100000.0}>100,000×</option>
         </select>
       </label>
+
+      {/* Reset to Now Button */}
+      <button
+        onClick={handleResetToNow}
+        style={{
+          marginTop: "0.5rem",
+          width: "100%",
+          background: "#111",
+          color: "#fff",
+          border: "1px solid #333",
+          borderRadius: "4px",
+          padding: "0.4rem",
+          cursor: "pointer",
+        }}
+      >
+        Reset to Now
+      </button>
     </div>
   );
 }

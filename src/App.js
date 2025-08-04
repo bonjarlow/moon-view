@@ -16,9 +16,7 @@ export default function App() {
 
   const startDate = new Date(Date.UTC(2024, 3, 8, 19, 0, 0)); // historical/future start date
   const [jdNow, setJdNow] = useState(julian.DateToJD(startDate));
-  const initialPos = astro.getEarthPositionJD(jdNow);
 
-  const [earthPos, setEarthPos] = useState(initialPos);
   const [cameraMode, setCameraMode] = useState("sun");
   const [showGeometry, setShowGeometry] = useState(false);
 
@@ -52,23 +50,24 @@ export default function App() {
   //optimization... is earth being textured and rotated into position from scratch every frame?
 
   useEffect(() => {
-    if (sampleRate === 0) return; // Pause the simulation
+    if (sampleRate === 0) return;
 
     const interval = setInterval(() => {
       const jdIncrement = (sampleRate / 86400) * speedUp;
-      const newJd = jdNow + jdIncrement;
-
-      const pos = astro.getEarthPositionJD(newJd, scaleSettings.SCALE);
-      if (pos) setEarthPos(pos);
-      setJdNow(newJd);
+      setJdNow(prev => prev + jdIncrement);
     }, sampleRate * 1000);
 
     return () => clearInterval(interval);
-  }, [sampleRate, speedUp, jdNow, scaleSettings.SCALE]);
+  }, [sampleRate, speedUp]);
+
+  const earthPos = useMemo(() => astro.getEarthPositionJD(jdNow, scaleSettings.SCALE), [jdNow, scaleSettings.SCALE]);
 
   const earthQuat = useMemo(() => {
     return astro.computeEarthQuat(jdNow, earthPos);
   }, [jdNow, earthPos]);
+
+  const subsolar = useMemo(() => astro.getSubsolarLatLon(jdNow), [jdNow]);
+  const sublunar = useMemo(() => astro.getSublunarLatLon(jdNow), [jdNow]);
 
   const toggleCameraMode = () => {
     setCameraMode(prev => {
@@ -114,43 +113,11 @@ export default function App() {
         {showGeometry ? "Hide Geometry" : "Show Geometry"}
       </button>
 
-      <SimulationControls
-        jdNow={jdNow}
-        sampleRate={sampleRate}
-        setSampleRate={setSampleRate}
-        speedUp={speedUp}
-        setSpeedUp={setSpeedUp}
-      />
-
-      {/* Reset to Now Button */}
-      <button
-        onClick={() => {
-          const now = new Date();
-          const jd = julian.DateToJD(now);
-          const pos = astro.getEarthPositionJD(jd, scaleSettings.SCALE);
-          setJdNow(jd);
-          setEarthPos(pos);
-        }}
-        style={{
-          position: "absolute",
-          top: 100, // slightly lower than the first button
-          left: 20,
-          zIndex: 10,
-          padding: "0.5rem 1rem",
-          background: "#111",
-          color: "#fff",
-          border: "1px solid #333",
-          borderRadius: "4px",
-        }}
-       >
-         Reset to Now
-       </button>
-
        <button
          onClick={() => setRealScale(!realScale)}
          style={{
            position: "absolute",
-           top: 140,
+           top: 100,
            left: 20,
            zIndex: 10,
            padding: "0.5rem 1rem",
@@ -163,6 +130,15 @@ export default function App() {
          {realScale ? "Switch to Aesthetic Scale" : "Switch to Realistic Scale"}
        </button>
 
+       <SimulationControls
+         jdNow={jdNow}
+         setJdNow={setJdNow}
+         sampleRate={sampleRate}
+         setSampleRate={setSampleRate}
+         speedUp={speedUp}
+         setSpeedUp={setSpeedUp}
+       />
+
       <Canvas
         shadows
         camera={{ position: [0, -1000, 200], fov: 50, near: 0.1, far: 1000000 }}
@@ -174,10 +150,11 @@ export default function App() {
         <Earth
           position={earthPos} jdNow={jdNow} showGeometry={showGeometry}
           orbScale={scaleSettings.orbScale} quaternion={earthQuat}
+          subsolar={subsolar} sublunar={sublunar}
         />
         <Moon
-          jdNow={jdNow} earthPos={earthPos} earthQuat={earthQuat}
-          orbScale={scaleSettings.orbScale} showGeometry={showGeometry}
+          earthPos={earthPos} earthQuat={earthQuat} orbScale={scaleSettings.orbScale}
+          showGeometry={showGeometry} sublunar={sublunar}
         />
         <SunToEarthLine earthPos={earthPos} showGeometry={showGeometry} />
         <KeyPoints showGeometry={showGeometry} SCALE={scaleSettings.SCALE} />
